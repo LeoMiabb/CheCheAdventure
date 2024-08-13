@@ -10,8 +10,8 @@ birdImage.src = 'bird.png';
 const bird = {
     x: 50,
     y: 150,
-    width: 60,
-    height: 60,
+    width: 80,
+    height: 80,
     gravity: 0.12,
     lift: -2,
     velocity: 0
@@ -20,7 +20,7 @@ const bird = {
 const pipes = [];
 let frame = 0;
 let score = 0;
-const gap = 250;
+const gap = 280;
 let gameOver = false;
 let gameStarted = false;
 
