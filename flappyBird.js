@@ -18,7 +18,7 @@ const bird = {
     width: 80,
     height: 80,
     gravity: 0.12,
-    lift: -2.5,
+    lift: -2,
     velocity: 0
 };
 
@@ -94,10 +94,28 @@ function drawPipes() {
 }
 
 function drawBackground() {
-    const bgWidth = canvas.width;
+    // Determine the aspect ratio of the canvas and the image
+    const canvasAspect = canvas.width / canvas.height;
+    const imageAspect = bgImage.width / bgImage.height;
+
+    let bgWidth, bgHeight;
+
+    // Cover the canvas while maintaining the image aspect ratio
+    if (canvasAspect > imageAspect) {
+        bgWidth = canvas.width;
+        bgHeight = canvas.width / imageAspect;
+    } else {
+        bgHeight = canvas.height;
+        bgWidth = canvas.height * imageAspect;
+    }
+
+    // Draw the image centered and moving
     const bgX = -(frame * 1.4 % bgWidth);
-    context.drawImage(bgImage, bgX, 0, bgWidth, canvas.height);
-    context.drawImage(bgImage, bgX + bgWidth, 0, bgWidth, canvas.height);
+    const bgY = (canvas.height - bgHeight) / 2;
+
+    // Draw two images side by side to create a seamless scrolling effect
+    context.drawImage(bgImage, bgX, bgY, bgWidth, bgHeight);
+    context.drawImage(bgImage, bgX + bgWidth, bgY, bgWidth, bgHeight);
 }
 
 function resetGame() {
