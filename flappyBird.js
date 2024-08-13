@@ -42,59 +42,10 @@ const nyanCatMusic = new Audio('nyan-cat.mp3');
 nyanCatMusic.loop = true;
 nyanCatMusic.volume = 0.1;
 
-const startButton = document.createElement('button');
-startButton.innerText = "Start Game";
-startButton.style.position = 'absolute';
-startButton.style.top = '50%';
-startButton.style.left = '50%';
-startButton.style.transform = 'translate(-50%, -50%)';
-startButton.style.padding = '15px 30px';
-startButton.style.fontSize = '24px';
-startButton.style.cursor = 'pointer';
-startButton.style.backgroundColor = '#4a4a4a';
-startButton.style.color = 'white';
-startButton.style.border = 'none';
-startButton.style.borderRadius = '10px';
-startButton.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
-document.body.appendChild(startButton);
-
-const restartButton = document.createElement('button');
-restartButton.innerText = "Restart";
-restartButton.style.position = 'absolute';
-restartButton.style.top = '50%';
-restartButton.style.left = '50%';
-restartButton.style.transform = 'translate(-50%, -50%)';
-restartButton.style.display = 'none';
-restartButton.style.padding = '15px 30px';
-restartButton.style.fontSize = '24px';
-restartButton.style.cursor = 'pointer';
-restartButton.style.backgroundColor = '#4a4a4a';
-restartButton.style.color = 'white';
-restartButton.style.border = 'none';
-restartButton.style.borderRadius = '10px';
-restartButton.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
-document.body.appendChild(restartButton);
-
-const highScoreText = document.createElement('div');
-highScoreText.style.position = 'absolute';
-highScoreText.style.top = '70%';
-highScoreText.style.left = '50%';
-highScoreText.style.transform = 'translate(-50%, -50%)';
-highScoreText.style.display = 'none';
-highScoreText.style.fontSize = '20px';
-highScoreText.style.color = 'white';
-highScoreText.style.textAlign = 'center';
-document.body.appendChild(highScoreText);
-
-let countdownText = document.createElement('div');
-countdownText.style.position = 'absolute';
-countdownText.style.top = '50%';
-countdownText.style.left = '50%';
-countdownText.style.transform = 'translate(-50%, -50%)';
-countdownText.style.fontSize = '50px';
-countdownText.style.color = 'white';
-countdownText.style.display = 'none';
-document.body.appendChild(countdownText);
+const startButton = document.getElementById('startButton');
+const restartButton = document.getElementById('restartButton');
+const highScoreText = document.getElementById('highScoreText');
+const countdownText = document.getElementById('countdownText');
 
 startButton.addEventListener('click', () => {
     startButton.style.display = 'none';
@@ -109,10 +60,8 @@ restartButton.addEventListener('click', () => {
     resetGame();
     restartButton.style.display = 'none';
     highScoreText.style.display = 'none';
-    nyanCatMusic.play().catch((error) => {
-        console.log("Music playback failed: ", error);
-    });
-    startCountdown();
+    startButton.style.display = 'block';
+    startButton.innerText = 'Start Again';
 });
 
 function drawBird() {
@@ -168,13 +117,6 @@ function drawScore() {
 }
 
 function showGameOver() {
-    // Ensure pipes are not drawn over the game over screen
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    drawBackground();
-    drawBird();
-    drawPipes();
-    drawScore();
-
     context.fillStyle = 'rgba(0, 0, 0, 0.7)';
     context.fillRect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
 
@@ -185,8 +127,8 @@ function showGameOver() {
     context.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2);
 
     restartButton.style.display = 'block';
-    displayHighScores();
     highScoreText.style.display = 'block';
+    displayHighScores();
 }
 
 function saveHighScore() {
@@ -209,6 +151,20 @@ function displayHighScores() {
 function endGame() {
     gameOver = true;
     nyanCatMusic.pause();
+    // Draw the game over screen last to ensure it is in the foreground
+    requestAnimationFrame(() => {
+        drawGameOverScreen();
+    });
+}
+
+function drawGameOverScreen() {
+    // Clear the canvas before drawing the game over screen
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    drawBackground();
+    drawPipes();
+    drawBird();
+    drawScore();
+
     showGameOver();
 }
 

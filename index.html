@@ -3,14 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Bird</title>
+    <title>Flappy Bird Game</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; margin: 0 auto; background-color: #70c5ce; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrolling */
+            font-family: Arial, sans-serif;
+            background-color: #70c5ce; /* Background color that matches the game theme */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            display: block;
+            background-color: #70c5ce; /* Ensure the canvas has a background color */
+        }
+        button {
+            position: absolute;
+            font-family: Arial, sans-serif;
+            background-color: #4a4a4a;
+            color: white;
+            padding: 15px 30px;
+            font-size: 24px;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            z-index: 10; /* Ensure buttons are on top */
+        }
+        #highScoreText {
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            z-index: 10; /* Ensure the high score text is on top */
+        }
+        #countdownText {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 50px;
+            z-index: 10; /* Ensure countdown is on top */
+        }
     </style>
 </head>
 <body>
     <canvas id="flappyBird"></canvas>
-    <script src="flappyBird.js"></script>
+    <div id="highScoreText" style="display: none;"></div>
+    <div id="countdownText" style="display: none;"></div>
+    <button id="startButton">Start Game</button>
+    <button id="restartButton" style="display: none;">Restart</button>
+    <script src="flappyBird.js"></script> <!-- Make sure this matches the filename of your JS file -->
 </body>
 </html>
