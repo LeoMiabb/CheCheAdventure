@@ -1,15 +1,20 @@
 const canvas = document.getElementById('flappyBird');
 const context = canvas.getContext('2d');
 
-canvas.width = 1320;
-canvas.height = 600;
+// Set canvas size dynamically based on the window size
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
 const birdImage = new Image();
 birdImage.src = 'bird.png';
 
 const bird = {
-    x: 50,
-    y: 150,
+    x: canvas.width / 6, // Adjust bird position based on canvas size
+    y: canvas.height / 2,
     width: 80,
     height: 80,
     gravity: 0.12,
@@ -20,7 +25,7 @@ const bird = {
 const pipes = [];
 let frame = 0;
 let score = 0;
-const gap = 280;
+let gap = Math.min(canvas.height / 3, 280); // Adjust gap based on canvas height
 let gameOver = false;
 let gameStarted = false;
 
@@ -33,9 +38,9 @@ pipeTopImage.src = 'pipeTop.png';
 const pipeBottomImage = new Image();
 pipeBottomImage.src = 'pipeBottom.png';
 
-const nyanCatMusic = new Audio('nyan-cat.mp3');  // Load the Nyan Cat music
-nyanCatMusic.loop = true;  // Set the music to loop
-nyanCatMusic.volume = 0.1;  // Set the volume lower (10% of full volume)
+const nyanCatMusic = new Audio('nyan-cat.mp3');
+nyanCatMusic.loop = true;
+nyanCatMusic.volume = 0.1;
 
 const startButton = document.createElement('button');
 startButton.innerText = "Start Game";
@@ -70,28 +75,15 @@ restartButton.style.borderRadius = '10px';
 restartButton.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
 document.body.appendChild(restartButton);
 
-const highScoreInput = document.createElement('input');
-highScoreInput.type = 'text';
-highScoreInput.placeholder = 'Enter your name';
-highScoreInput.style.position = 'absolute';
-highScoreInput.style.top = '40%';
-highScoreInput.style.left = '50%';
-highScoreInput.style.transform = 'translate(-50%, -50%)';
-highScoreInput.style.display = 'none';
-highScoreInput.style.padding = '10px';
-highScoreInput.style.fontSize = '20px';
-highScoreInput.style.border = '1px solid #ccc';
-highScoreInput.style.borderRadius = '5px';
-document.body.appendChild(highScoreInput);
-
 const highScoreText = document.createElement('div');
 highScoreText.style.position = 'absolute';
-highScoreText.style.top = '35%';
+highScoreText.style.top = '70%';
 highScoreText.style.left = '50%';
 highScoreText.style.transform = 'translate(-50%, -50%)';
 highScoreText.style.display = 'none';
 highScoreText.style.fontSize = '20px';
 highScoreText.style.color = 'white';
+highScoreText.style.textAlign = 'center';
 document.body.appendChild(highScoreText);
 
 let countdownText = document.createElement('div');
@@ -106,16 +98,20 @@ document.body.appendChild(countdownText);
 
 startButton.addEventListener('click', () => {
     startButton.style.display = 'none';
-    nyanCatMusic.play();  // Start playing the music when the game starts
+    nyanCatMusic.play().catch((error) => {
+        console.log("Music playback failed: ", error);
+    });
     startCountdown();
 });
 
 restartButton.addEventListener('click', () => {
+    saveHighScore();
     resetGame();
     restartButton.style.display = 'none';
-    highScoreInput.style.display = 'none';
     highScoreText.style.display = 'none';
-    nyanCatMusic.play();  // Restart the music on restart
+    nyanCatMusic.play().catch((error) => {
+        console.log("Music playback failed: ", error);
+    });
     startCountdown();
 });
 
@@ -156,7 +152,7 @@ function drawBackground() {
 }
 
 function resetGame() {
-    bird.y = 150;
+    bird.y = canvas.height / 2;
     bird.velocity = 0;
     pipes.length = 0;
     score = 0;
@@ -167,49 +163,52 @@ function resetGame() {
 
 function drawScore() {
     context.fillStyle = 'black';
-    context.font = '20px Arial';
-    context.fillText(`Score: ${score}`, 10, 20);
+    context.font = `${Math.min(canvas.width, canvas.height) / 20}px Arial`; // Adjust font size based on canvas size
+    context.fillText(`Score: ${score}`, 10, 30);
 }
 
 function showGameOver() {
+    // Ensure pipes are not drawn over the game over screen
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    drawBackground();
+    drawBird();
+    drawPipes();
+    drawScore();
+
     context.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    context.fillRect(0, canvas.height / 2 - 50, canvas.width, 100);
+    context.fillRect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
 
     context.fillStyle = 'white';
-    context.font = '30px Arial';
-    context.fillText(`Game Over`, canvas.width / 2 - 70, canvas.height / 2 - 10);
-    context.fillText(`Score: ${score}`, canvas.width / 2 - 50, canvas.height / 2 + 30);
+    context.font = `${Math.min(canvas.width, canvas.height) / 15}px Arial`;
+    context.textAlign = 'center';
+    context.fillText(`Game Over`, canvas.width / 2, canvas.height / 2 - 40);
+    context.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2);
 
-    highScoreInput.style.display = 'block';
     restartButton.style.display = 'block';
+    displayHighScores();
     highScoreText.style.display = 'block';
-    highScoreText.innerText = 'Enter your name and press Enter to save your score';
-    displayHighScores(); // Ensure that high scores are displayed after the game over.
 }
 
 function saveHighScore() {
-    const name = highScoreInput.value.trim();
-    if (name) {
-        const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
-        highScores.push({ name, score });
-        highScores.sort((a, b) => b.score - a.score);
-        highScores.splice(5); // Keep only top 5 scores
-        localStorage.setItem('highScores', JSON.stringify(highScores));
-        displayHighScores();
-    }
+    const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
+    highScores.push({ score: score, date: new Date().toLocaleString() });
+    highScores.sort((a, b) => b.score - a.score);
+    highScores.splice(5); // Keep only top 5 scores
+    localStorage.setItem('highScores', JSON.stringify(highScores));
+    displayHighScores();
 }
 
 function displayHighScores() {
     const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
     highScoreText.innerHTML = `<h3>High Scores</h3>`;
-    highScores.forEach((score, index) => {
-        highScoreText.innerHTML += `<p>${index + 1}. ${score.name} - ${score.score}</p>`;
+    highScores.forEach((entry, index) => {
+        highScoreText.innerHTML += `<p>${index + 1}. ${entry.score} - ${entry.date}</p>`;
     });
 }
 
 function endGame() {
     gameOver = true;
-    nyanCatMusic.pause();  // Pause the music when the game ends
+    nyanCatMusic.pause();
     showGameOver();
 }
 
@@ -234,17 +233,21 @@ function update() {
     requestAnimationFrame(update);
 }
 
-document.addEventListener('keydown', (event) => {
-    if (event.code === 'Space' && !gameOver && gameStarted) {
+function flyBird() {
+    if (!gameOver && gameStarted) {
         bird.velocity = bird.lift * 1.5;
+    }
+}
+
+document.addEventListener('keydown', (event) => {
+    if (event.code === 'Space') {
+        flyBird();
     }
 });
 
-highScoreInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' && highScoreInput.style.display !== 'none') {
-        saveHighScore();
-        highScoreInput.style.display = 'none';
-    }
+canvas.addEventListener('touchstart', (event) => {
+    event.preventDefault();
+    flyBird();
 });
 
 function startCountdown() {
