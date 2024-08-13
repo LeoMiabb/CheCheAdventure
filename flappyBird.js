@@ -10,8 +10,8 @@ birdImage.src = 'bird.png';
 const bird = {
     x: 50,
     y: 150,
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     gravity: 0.12,
     lift: -2,
     velocity: 0
@@ -20,8 +20,9 @@ const bird = {
 const pipes = [];
 let frame = 0;
 let score = 0;
-const gap = 280;
+const gap = 250;
 let gameOver = false;
+let gameStarted = false;
 
 const bgImage = new Image();
 bgImage.src = 'background.png';
@@ -31,6 +32,17 @@ pipeTopImage.src = 'pipeTop.png';
 
 const pipeBottomImage = new Image();
 pipeBottomImage.src = 'pipeBottom.png';
+
+const startButton = document.createElement('button');
+startButton.innerText = "Start Game";
+startButton.style.position = 'absolute';
+startButton.style.top = '50%';
+startButton.style.left = '50%';
+startButton.style.transform = 'translate(-50%, -50%)';
+startButton.style.padding = '10px 20px';
+startButton.style.fontSize = '20px';
+startButton.style.cursor = 'pointer';
+document.body.appendChild(startButton);
 
 const restartButton = document.createElement('button');
 restartButton.innerText = "Restart";
@@ -64,13 +76,27 @@ highScoreText.style.fontSize = '20px';
 highScoreText.style.color = 'white';
 document.body.appendChild(highScoreText);
 
+let countdownText = document.createElement('div');
+countdownText.style.position = 'absolute';
+countdownText.style.top = '50%';
+countdownText.style.left = '50%';
+countdownText.style.transform = 'translate(-50%, -50%)';
+countdownText.style.fontSize = '50px';
+countdownText.style.color = 'white';
+countdownText.style.display = 'none';
+document.body.appendChild(countdownText);
+
+startButton.addEventListener('click', () => {
+    startButton.style.display = 'none';
+    startCountdown();
+});
+
 restartButton.addEventListener('click', () => {
     resetGame();
     restartButton.style.display = 'none';
     highScoreInput.style.display = 'none';
     highScoreText.style.display = 'none';
-    gameOver = false;
-    update();
+    startCountdown();
 });
 
 function drawBird() {
@@ -116,6 +142,7 @@ function resetGame() {
     score = 0;
     frame = 0;
     gameOver = false;
+    gameStarted = false;
 }
 
 function drawScore() {
@@ -165,7 +192,7 @@ function endGame() {
 }
 
 function update() {
-    if (gameOver) return;
+    if (gameOver || !gameStarted) return;
 
     bird.velocity += bird.gravity;
     bird.y += bird.velocity;
@@ -186,7 +213,7 @@ function update() {
 }
 
 document.addEventListener('keydown', (event) => {
-    if (event.code === 'Space' && !gameOver) {
+    if (event.code === 'Space' && !gameOver && gameStarted) {
         bird.velocity = bird.lift * 1.5;
     }
 });
@@ -197,5 +224,23 @@ highScoreInput.addEventListener('keydown', (event) => {
         highScoreInput.style.display = 'none';
     }
 });
+
+function startCountdown() {
+    let countdown = 3;
+    countdownText.style.display = 'block';
+    countdownText.innerText = countdown;
+
+    const countdownInterval = setInterval(() => {
+        countdown--;
+        if (countdown > 0) {
+            countdownText.innerText = countdown;
+        } else {
+            clearInterval(countdownInterval);
+            countdownText.style.display = 'none';
+            gameStarted = true;
+            update();
+        }
+    }, 1000);
+}
 
 birdImage.onload = update;
